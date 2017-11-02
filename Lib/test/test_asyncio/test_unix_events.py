@@ -233,6 +233,8 @@ class SelectorEventLoopSignalTests(test_utils.TestCase):
 
 @unittest.skipUnless(hasattr(socket, 'AF_UNIX'),
                      'UNIX Sockets are not supported')
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 class SelectorEventLoopUnixSocketTests(test_utils.TestCase):
 
     def setUp(self):
@@ -841,6 +843,7 @@ WaitPidMocks = collections.namedtuple("WaitPidMocks",
                                        ))
 
 
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 class ChildWatcherTestsMixin:
 
     ignore_warnings = mock.patch.object(log.logger, "warning")

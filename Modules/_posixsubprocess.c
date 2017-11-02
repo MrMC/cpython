@@ -500,11 +500,15 @@ child_exec(char *const exec_array[],
     saved_errno = 0;
     for (i = 0; exec_array[i] != NULL; ++i) {
         const char *executable = exec_array[i];
+#if defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) || defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
+	errno = ENOTSUP;
+#else
         if (envp) {
             execve(executable, argv, envp);
         } else {
             execv(executable, argv);
         }
+#endif
         if (errno != ENOENT && errno != ENOTDIR && saved_errno == 0) {
             saved_errno = errno;
         }
@@ -673,7 +677,12 @@ subprocess_fork_exec(PyObject* self, PyObject *args)
         cwd_obj2 = NULL;
     }
 
+#if defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) || defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
+    pid = -1;
+    errno = ENOTSUP;
+#else
     pid = fork();
+#endif
     if (pid == 0) {
         /* Child process */
         /*

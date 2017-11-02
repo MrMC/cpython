@@ -205,7 +205,6 @@ PIPE = -1
 STDOUT = -2
 DEVNULL = -3
 
-
 # XXX This function is only used by multiprocessing and the test suite,
 # but it's here so that it can be imported when Python is compiled without
 # threads.
@@ -568,6 +567,9 @@ class Popen(object):
                  restore_signals=True, start_new_session=False,
                  pass_fds=()):
         """Create new Popen instance."""
+        if not os.allows_subprocesses:
+            raise RuntimeError("Subprocesses are not supported on this platform.")
+
         _cleanup()
         # Held while anything is calling waitpid before returncode has been
         # updated to prevent clobbering returncode if wait() or poll() are
@@ -1308,7 +1310,7 @@ class Popen(object):
                 raise SubprocessError("Unknown child exit status!")
 
 
-        def _internal_poll(self, _deadstate=None, _waitpid=os.waitpid,
+        def _internal_poll(self, _deadstate=None, _waitpid=None,
                 _WNOHANG=os.WNOHANG, _ECHILD=errno.ECHILD):
             """Check if child process has terminated.  Returns returncode
             attribute.
@@ -1317,6 +1319,8 @@ class Popen(object):
             outside of the local scope (nor can any methods it calls).
 
             """
+            if _waitpid is None:
+                _waitpid = os.waitpid
             if self.returncode is None:
                 if not self._waitpid_lock.acquire(False):
                     # Something else is busy calling waitpid.  Don't allow two

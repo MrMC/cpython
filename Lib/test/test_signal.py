@@ -158,6 +158,7 @@ class InterProcessSignalTests(unittest.TestCase):
     @unittest.skipIf(sys.platform=='freebsd6',
         'inter process signals not reliable (do not mix well with threading) '
         'on freebsd6')
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_main(self):
         # This function spawns a child process to insulate the main
         # test-running process from all the signals. It then

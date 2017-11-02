@@ -11,6 +11,7 @@ import subprocess
 import py_compile
 import contextlib
 import shutil
+import unittest
 import zipfile
 
 from importlib.util import source_from_cache
@@ -20,6 +21,8 @@ from test.support import make_legacy_pyc, strip_python_stderr
 # Cached result of the expensive test performed in the function below.
 __cached_interp_requires_environment = None
 
+
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 def interpreter_requires_environment():
     """
     Returns True if our sys.executable interpreter requires environment
@@ -107,6 +110,8 @@ def run_python_until_end(*args, **env_vars):
     err = strip_python_stderr(err)
     return _PythonRunResult(rc, out, err), cmd_line
 
+
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 def _assert_python(expected_success, *args, **env_vars):
     res, cmd_line = run_python_until_end(*args, **env_vars)
     if (res.rc and expected_success) or (not res.rc and not expected_success):
@@ -159,6 +164,8 @@ def assert_python_failure(*args, **env_vars):
     """
     return _assert_python(False, *args, **env_vars)
 
+
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 def spawn_python(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw):
     """Run a Python subprocess with the given arguments.
 

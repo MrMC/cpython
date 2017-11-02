@@ -1,5 +1,8 @@
-import unittest, sys
+import os
+import unittest
+
 from ctypes.test import need_symbol
+
 
 class SimpleTypesTestCase(unittest.TestCase):
 
@@ -139,7 +142,7 @@ class SimpleTypesTestCase(unittest.TestCase):
         import _ctypes_test
         from ctypes import CDLL, c_void_p, ArgumentError
 
-        func = CDLL(_ctypes_test.__file__)._testfunc_p_p
+        func = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))._testfunc_p_p
         func.restype = c_void_p
         # TypeError: has no from_param method
         self.assertRaises(TypeError, setattr, func, "argtypes", (object,))

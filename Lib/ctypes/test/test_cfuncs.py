@@ -1,17 +1,20 @@
 # A lot of failures in these tests on Mac OS X.
 # Byte order related?
 
+import os
 import unittest
 from ctypes import *
 from ctypes.test import need_symbol
 
 import _ctypes_test
 
+
 class CFunctions(unittest.TestCase):
-    _dll = CDLL(_ctypes_test.__file__)
+    _dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 
     def S(self):
         return c_longlong.in_dll(self._dll, "last_tf_arg_s").value
+
     def U(self):
         return c_ulonglong.in_dll(self._dll, "last_tf_arg_u").value
 
@@ -206,7 +209,7 @@ else:
 
 @need_symbol('WinDLL')
 class stdcallCFunctions(CFunctions):
-    _dll = stdcall_dll(_ctypes_test.__file__)
+    _dll = stdcall_dll(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 
 if __name__ == '__main__':
     unittest.main()

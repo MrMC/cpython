@@ -14,6 +14,7 @@ NUMTRIPS = 3
 
 _print_mutex = thread.allocate_lock()
 
+
 def verbose_print(arg):
     """Helper function for printing out debugging output."""
     if support.verbose:
@@ -223,6 +224,7 @@ class TestForkInThread(unittest.TestCase):
 
     @unittest.skipIf(sys.platform.startswith('win'),
                      "This test is only appropriate for POSIX-like systems.")
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     @support.reap_threads
     def test_forkinthread(self):
         def thread1():

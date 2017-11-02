@@ -46,6 +46,7 @@ else:
     def failsOnWindows(f):
         return f
 
+
 class BaseTest(unittest.TestCase):
     """Base class for venv tests."""
 
@@ -122,6 +123,7 @@ class BasicTest(BaseTest):
         self.assertTrue(os.path.exists(fn), 'File %r should exist.' % fn)
 
     @skipInVenv
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_prefixes(self):
         """
         Test that the prefix values are as expected.
@@ -260,6 +262,7 @@ class BasicTest(BaseTest):
     # point to the venv being used to run the test, and we lose the link
     # to the source build - so Python can't initialise properly.
     @skipInVenv
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_executable(self):
         """
         Test that the sys.executable value is as expected.
@@ -274,6 +277,7 @@ class BasicTest(BaseTest):
         self.assertEqual(out.strip(), envpy.encode())
 
     @unittest.skipUnless(can_symlink(), 'Needs symlinks')
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_executable_symlinks(self):
         """
         Test that the sys.executable value is as expected.
@@ -292,6 +296,7 @@ class BasicTest(BaseTest):
 @skipInVenv
 class EnsurePipTest(BaseTest):
     """Test venv module installation of pip."""
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def assert_pip_not_installed(self):
         envpy = os.path.join(os.path.realpath(self.env_dir),
                              self.bindir, self.exe)
@@ -419,6 +424,7 @@ class EnsurePipTest(BaseTest):
             self.assert_pip_not_installed()
 
     # Requesting pip fails without SSL (http://bugs.python.org/issue19744)
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     @unittest.skipIf(ssl is None, ensurepip._MISSING_SSL_MESSAGE)
     @unittest.skipUnless(threading, 'some dependencies of pip import threading'
                                     ' module unconditionally')

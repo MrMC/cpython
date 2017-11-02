@@ -611,7 +611,7 @@ def main(tests=None, **kwargs):
         sys.stdout.flush()
         print()   # Force a newline (just in case)
         print(json.dumps(result))
-        sys.exit(0)
+        return 0
 
     setup_tests(ns)
 
@@ -793,7 +793,7 @@ def main(tests=None, **kwargs):
             from threading import Thread
         except ImportError:
             print("Multiprocess option requires thread support")
-            sys.exit(2)
+            return 2
         from queue import Queue
         debug_output_pat = re.compile(r"\[\d+ refs, \d+ blocks\]$")
         output = Queue()
@@ -962,12 +962,12 @@ def main(tests=None, **kwargs):
     print("Tests result: %s" % result)
 
     if bad:
-        sys.exit(2)
+        return 2
     if interrupted:
-        sys.exit(130)
+        return 130
     if ns.fail_env_changed and environment_changed:
-        sys.exit(3)
-    sys.exit(0)
+        return 3
+    return 0
 
 
 # small set of tests to determine if we have a basically functioning interpreter
@@ -1805,7 +1805,9 @@ def main_in_temp_cwd():
     # change the CWD, the original CWD will be used.  The original CWD is
     # available from support.SAVEDCWD.
     with support.temp_cwd(test_cwd, quiet=True):
-        main()
+        result = main()
+
+    return result
 
 
 if __name__ == '__main__':
@@ -1830,4 +1832,5 @@ if __name__ == '__main__':
     # sanity check
     assert __file__ == os.path.abspath(sys.argv[0])
 
-    main_in_temp_cwd()
+    result = main_in_temp_cwd()
+    sys.exit(result)

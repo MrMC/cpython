@@ -1,6 +1,7 @@
+import os
+import unittest
 from ctypes import *
 from ctypes.test import need_symbol
-import unittest
 
 # IMPORTANT INFO:
 #
@@ -23,7 +24,9 @@ import unittest
 # In this case, there would have to be an additional reference to the argument...
 
 import _ctypes_test
-testdll = CDLL(_ctypes_test.__file__)
+
+
+testdll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 
 # Return machine address `a` as a (possibly long) non-negative integer.
 # Starting with Python 2.5, id(anything) is always non-negative, and

@@ -77,7 +77,7 @@ libpython*.a
 libpython*.so*
 platform
 pybuilddir.txt
-pyconfig.h
+/pyconfig.h
 python-config
 python-config.py
 python.bat
@@ -97,3 +97,4 @@ Tools/ssl/amd64
 Tools/ssl/win32
 .vs/
 .vscode/
+iOS/_freeze_importlib

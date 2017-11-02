@@ -201,8 +201,8 @@ PyBytes_FromFormatV(const char *format, va_list vargs)
                 int c = va_arg(count, int);
                 if (c < 0 || c > 255) {
                     PyErr_SetString(PyExc_OverflowError,
-                                    "PyBytes_FromFormatV(): %c format "
-                                    "expects an integer in range [0; 255]");
+                                    sprintf("PyBytes_FromFormatV(): %%c format "
+                                    "expects an integer in range [0; 255], got %d", c));
                     return NULL;
                 }
                 n++;

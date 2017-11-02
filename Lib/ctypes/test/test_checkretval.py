@@ -1,7 +1,9 @@
+import os
 import unittest
 
 from ctypes import *
 from ctypes.test import need_symbol
+
 
 class CHECKED(c_int):
     def _check_retval_(value):
@@ -14,7 +16,7 @@ class Test(unittest.TestCase):
     def test_checkretval(self):
 
         import _ctypes_test
-        dll = CDLL(_ctypes_test.__file__)
+        dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
         self.assertEqual(42, dll._testfunc_p_p(42))
 
         dll._testfunc_p_p.restype = CHECKED

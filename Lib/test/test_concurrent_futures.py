@@ -91,6 +91,7 @@ class ThreadPoolMixin(ExecutorMixin):
     executor_type = futures.ThreadPoolExecutor
 
 
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 class ProcessPoolMixin(ExecutorMixin):
     executor_type = futures.ProcessPoolExecutor
 

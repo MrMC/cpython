@@ -1,15 +1,16 @@
+import os
 import unittest
 from ctypes import *
-import os
 
 import _ctypes_test
+
 
 class ReturnFuncPtrTestCase(unittest.TestCase):
 
     def test_with_prototype(self):
         # The _ctypes_test shared lib/dll exports quite some functions for testing.
         # The get_strchr function returns a *pointer* to the C strchr function.
-        dll = CDLL(_ctypes_test.__file__)
+        dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
         get_strchr = dll.get_strchr
         get_strchr.restype = CFUNCTYPE(c_char_p, c_char_p, c_char)
         strchr = get_strchr()
@@ -21,7 +22,7 @@ class ReturnFuncPtrTestCase(unittest.TestCase):
         self.assertRaises(TypeError, strchr, b"abcdef")
 
     def test_without_prototype(self):
-        dll = CDLL(_ctypes_test.__file__)
+        dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
         get_strchr = dll.get_strchr
         # the default 'c_int' would not work on systems where sizeof(int) != sizeof(void *)
         get_strchr.restype = c_void_p
@@ -35,7 +36,7 @@ class ReturnFuncPtrTestCase(unittest.TestCase):
         self.assertRaises(TypeError, strchr, b"abcdef")
 
     def test_from_dll(self):
-        dll = CDLL(_ctypes_test.__file__)
+        dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
         # _CFuncPtr instances are now callable with a tuple argument
         # which denotes a function name and a dll:
         strchr = CFUNCTYPE(c_char_p, c_char_p, c_char)(("my_strchr", dll))
@@ -51,13 +52,13 @@ class ReturnFuncPtrTestCase(unittest.TestCase):
                 if key == 0:
                     return "my_strchr"
                 if key == 1:
-                    return CDLL(_ctypes_test.__file__)
+                    return CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
                 raise IndexError
 
         # _CFuncPtr instances are now callable with a tuple argument
         # which denotes a function name and a dll:
         strchr = CFUNCTYPE(c_char_p, c_char_p, c_char)(
-                BadSequence(("my_strchr", CDLL(_ctypes_test.__file__))))
+                BadSequence(("my_strchr", CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE'])))))
         self.assertTrue(strchr(b"abcdef", b"b"), "bcdef")
         self.assertEqual(strchr(b"abcdef", b"x"), None)
         self.assertRaises(ArgumentError, strchr, b"abcdef", 3.0)

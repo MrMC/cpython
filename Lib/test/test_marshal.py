@@ -195,7 +195,10 @@ class BugsTestCase(unittest.TestCase):
         if os.name == 'nt' and hasattr(sys, 'gettotalrefcount'):
             MAX_MARSHAL_STACK_DEPTH = 1000
         else:
-            MAX_MARSHAL_STACK_DEPTH = 2000
+            if sys.platform in ('ios', 'tvos', 'watchos'):
+                MAX_MARSHAL_STACK_DEPTH = 1500
+            else:
+                MAX_MARSHAL_STACK_DEPTH = 2000
         for i in range(MAX_MARSHAL_STACK_DEPTH - 2):
             last.append([0])
             last = last[-1]

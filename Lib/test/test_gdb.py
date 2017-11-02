@@ -5,7 +5,6 @@
 
 import os
 import re
-import pprint
 import subprocess
 import sys
 import sysconfig
@@ -21,6 +20,7 @@ except ImportError:
 from test import support
 from test.support import run_unittest, findfile, python_is_optimized
 
+
 def get_gdb_version():
     try:
         proc = subprocess.Popen(["gdb", "-nx", "--version"],
@@ -33,6 +33,8 @@ def get_gdb_version():
         # This is what "no gdb" looks like.  There may, however, be other
         # errors that manifest this way too.
         raise unittest.SkipTest("Couldn't find gdb on the path")
+    except RuntimeError:
+        raise unittest.SkipTest('Test requires support for subprocesses.')
 
     # Regex to parse:
     # 'GNU gdb (GDB; SUSE Linux Enterprise 12) 7.7\n' -> 7.7

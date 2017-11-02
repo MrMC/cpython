@@ -5,7 +5,9 @@ from io import StringIO
 import linecache
 import sys
 import unittest
+import os
 import re
+import subprocess
 from test import support
 from test.support import TESTFN, Error, captured_output, unlink, cpython_only
 from test.support.script_helper import assert_python_ok
@@ -106,11 +108,12 @@ class TracebackCases(unittest.TestCase):
             str_name = '.'.join([X.__module__, X.__qualname__])
         self.assertEqual(err[0], "%s: %s\n" % (str_name, str_value))
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_encoded_file(self):
         # Test that tracebacks are correctly printed for encoded source files:
         # - correct line number (Issue2384)
         # - respect file encoding (Issue3975)
-        import tempfile, sys, subprocess, os
+        import tempfile, sys, os
 
         # The spawned subprocess has its stdout redirected to a PIPE, and its
         # encoding may be different from the current interpreter, on Windows

@@ -642,7 +642,7 @@ class BaseXYTestCase(unittest.TestCase):
     def test_ErrorHeritage(self):
         self.assertTrue(issubclass(binascii.Error, ValueError))
 
-
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 class TestMain(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(support.TESTFN):

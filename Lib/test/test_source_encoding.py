@@ -8,6 +8,7 @@ import sys
 import subprocess
 import tempfile
 
+
 class MiscSourceEncodingTest(unittest.TestCase):
 
     def test_pep263(self):
@@ -60,6 +61,7 @@ class MiscSourceEncodingTest(unittest.TestCase):
         # two bytes in common with the UTF-8 BOM
         self.assertRaises(SyntaxError, eval, b'\xef\xbb\x20')
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_20731(self):
         sub = subprocess.Popen([sys.executable,
                         os.path.join(os.path.dirname(__file__),

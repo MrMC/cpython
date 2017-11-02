@@ -1,16 +1,20 @@
 import pipes
 import os
 import string
+import sys
 import unittest
 from test.support import TESTFN, run_unittest, unlink, reap_children
 
 if os.name != 'posix':
     raise unittest.SkipTest('pipes module only works on posix')
+if sys.platform in ('ios', 'tvos', 'watchos'):
+    raise unittest.SkipTest('pipes tests cannot run on %s' % sys.platform)
 
 TESTFN2 = TESTFN + "2"
 
 # tr a-z A-Z is not portable, so make the ranges explicit
 s_command = 'tr %s %s' % (string.ascii_lowercase, string.ascii_uppercase)
+
 
 class SimplePipeTests(unittest.TestCase):
     def tearDown(self):

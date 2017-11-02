@@ -1,13 +1,13 @@
 """Tests for distutils.spawn."""
 import unittest
 import os
-import time
-from test.support import captured_stdout, run_unittest
+from test.support import run_unittest
 
 from distutils.spawn import _nt_quote_args
-from distutils.spawn import spawn, find_executable
+from distutils.spawn import spawn
 from distutils.errors import DistutilsExecError
 from distutils.tests import support
+
 
 class SpawnTestCase(support.TempdirManager,
                     support.LoggingSilencer,
@@ -22,9 +22,7 @@ class SpawnTestCase(support.TempdirManager,
             res = _nt_quote_args(args)
             self.assertEqual(res, wanted)
 
-
-    @unittest.skipUnless(os.name in ('nt', 'posix'),
-                         'Runs only under posix or nt')
+    @unittest.skipUnless(os.name == 'nt' or (os.name == 'posix' and hasattr(os, 'fork') and os.allows_subprocesses), "distutils cannot spawn child processes")
     def test_spawn(self):
         tmpdir = self.mkdtemp()
 
@@ -50,6 +48,7 @@ class SpawnTestCase(support.TempdirManager,
 
         os.chmod(exe, 0o777)
         spawn([exe])  # should work without any error
+
 
 def test_suite():
     return unittest.makeSuite(SpawnTestCase)

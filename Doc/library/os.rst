@@ -2769,6 +2769,13 @@ to be ignored.
    Python signal handler registered for :const:`SIGABRT` with
    :func:`signal.signal`.
 
+.. data:: allows_subprocesses
+
+   Boolean that describes whether subprocesses can be by the operating system.
+   Some platforms (e.g., iOS mobile devices) *implement* calls like
+   :func:`execv` and :func:`spawnv`, but will raise errors or break if
+   called. Calls to create subprocesses should only be invoked if
+   :data:`os.allows_subprocesses` is `True`.
 
 .. function:: execl(path, arg0, arg1, ...)
               execle(path, arg0, arg1, ..., env)

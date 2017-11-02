@@ -532,6 +532,7 @@ class UnixSocketTestBase(SocketTestBase):
         sock.bind(path)
         self.addCleanup(support.unlink, path)
 
+
 class UnixStreamBase(UnixSocketTestBase):
     """Base class for Unix-domain SOCK_STREAM tests."""
 
@@ -783,8 +784,7 @@ class GeneralModuleTests(unittest.TestCase):
             self.fail("Error testing host resolution mechanisms. (fqdn: %s, all: %s)" % (fqhn, repr(all_host_names)))
 
     def test_host_resolution(self):
-        for addr in ['0.1.1.~1', '1+.1.1.1', '::1q', '::1::2',
-                     '1:1:1:1:1:1:1:1:1']:
+        for addr in ['0.1.1.~1', '1+.1.1.1']:
             self.assertRaises(OSError, socket.gethostbyname, addr)
             self.assertRaises(OSError, socket.gethostbyaddr, addr)
 
@@ -795,6 +795,12 @@ class GeneralModuleTests(unittest.TestCase):
         # a matching name entry (e.g. 'ip6-localhost')
         for host in [support.HOST]:
             self.assertIn(host, socket.gethostbyaddr(host)[2])
+
+    @unittest.skipUnless(socket.has_ipv6, "test needs IPv6 support")
+    def test_host_resolution_ipv6(self):
+        for addr in ['::1q', '::1::2', '1:1:1:1:1:1:1:1:1']:
+            self.assertRaises(OSError, socket.gethostbyname, addr)
+            self.assertRaises(OSError, socket.gethostbyaddr, addr)
 
     @unittest.skipUnless(hasattr(socket, 'sethostname'), "test needs socket.sethostname()")
     @unittest.skipUnless(hasattr(socket, 'gethostname'), "test needs socket.gethostname()")
@@ -897,7 +903,7 @@ class GeneralModuleTests(unittest.TestCase):
         # I've ordered this by protocols that have both a tcp and udp
         # protocol, at least for modern Linuxes.
         if (sys.platform.startswith(('freebsd', 'netbsd', 'gnukfreebsd'))
-            or sys.platform in ('linux', 'darwin')):
+            or sys.platform in ('linux', 'darwin', 'ios', 'tvos', 'watchos')):
             # avoid the 'echo' service on this platform, as there is an
             # assumption breaking non-standard port/protocol entry
             services = ('daytime', 'qotd', 'domain')
@@ -2783,7 +2789,8 @@ class SCMRightsTest(SendrecvmsgServerTimeoutBase):
     def _testFDPassCMSG_LEN(self):
         self.createAndSendFDs(1)
 
-    @unittest.skipIf(sys.platform == "darwin", "skipping, see issue #12958")
+    @unittest.skipIf(sys.platform in ('darwin', 'iOS', 'tvos', 'watchos'),
+                     "skipping, see issue #12958")
     @unittest.skipIf(sys.platform.startswith("aix"), "skipping, see issue #22397")
     @requireAttrs(socket, "CMSG_SPACE")
     def testFDPassSeparate(self):
@@ -2794,7 +2801,8 @@ class SCMRightsTest(SendrecvmsgServerTimeoutBase):
                              maxcmsgs=2)
 
     @testFDPassSeparate.client_skip
-    @unittest.skipIf(sys.platform == "darwin", "skipping, see issue #12958")
+    @unittest.skipIf(sys.platform in ('darwin', 'iOS', 'tvos', 'watchos'),
+                     "skipping, see issue #12958")
     @unittest.skipIf(sys.platform.startswith("aix"), "skipping, see issue #22397")
     def _testFDPassSeparate(self):
         fd0, fd1 = self.newFDs(2)
@@ -2807,7 +2815,8 @@ class SCMRightsTest(SendrecvmsgServerTimeoutBase):
                                           array.array("i", [fd1]))]),
             len(MSG))
 
-    @unittest.skipIf(sys.platform == "darwin", "skipping, see issue #12958")
+    @unittest.skipIf(sys.platform in ('darwin', 'iOS', 'tvos', 'watchos'),
+                     "skipping, see issue #12958")
     @unittest.skipIf(sys.platform.startswith("aix"), "skipping, see issue #22397")
     @requireAttrs(socket, "CMSG_SPACE")
     def testFDPassSeparateMinSpace(self):
@@ -2820,7 +2829,8 @@ class SCMRightsTest(SendrecvmsgServerTimeoutBase):
                              maxcmsgs=2, ignoreflags=socket.MSG_CTRUNC)
 
     @testFDPassSeparateMinSpace.client_skip
-    @unittest.skipIf(sys.platform == "darwin", "skipping, see issue #12958")
+    @unittest.skipIf(sys.platform in ('darwin', 'iOS', 'tvos', 'watchos'),
+                     "skipping, see issue #12958")
     @unittest.skipIf(sys.platform.startswith("aix"), "skipping, see issue #22397")
     def _testFDPassSeparateMinSpace(self):
         fd0, fd1 = self.newFDs(2)
@@ -3593,12 +3603,16 @@ class SendrecvmsgUnixStreamTestBase(SendrecvmsgConnectedBase,
 
 @requireAttrs(socket.socket, "sendmsg")
 @requireAttrs(socket, "AF_UNIX")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(thread, 'Threading required for this test.')
 class SendmsgUnixStreamTest(SendmsgStreamTests, SendrecvmsgUnixStreamTestBase):
     pass
 
 @requireAttrs(socket.socket, "recvmsg")
 @requireAttrs(socket, "AF_UNIX")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(thread, 'Threading required for this test.')
 class RecvmsgUnixStreamTest(RecvmsgTests, RecvmsgGenericStreamTests,
                             SendrecvmsgUnixStreamTestBase):
@@ -3606,6 +3620,8 @@ class RecvmsgUnixStreamTest(RecvmsgTests, RecvmsgGenericStreamTests,
 
 @requireAttrs(socket.socket, "recvmsg_into")
 @requireAttrs(socket, "AF_UNIX")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(thread, 'Threading required for this test.')
 class RecvmsgIntoUnixStreamTest(RecvmsgIntoTests, RecvmsgGenericStreamTests,
                                 SendrecvmsgUnixStreamTestBase):
@@ -3613,12 +3629,16 @@ class RecvmsgIntoUnixStreamTest(RecvmsgIntoTests, RecvmsgGenericStreamTests,
 
 @requireAttrs(socket.socket, "sendmsg", "recvmsg")
 @requireAttrs(socket, "AF_UNIX", "SOL_SOCKET", "SCM_RIGHTS")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(thread, 'Threading required for this test.')
 class RecvmsgSCMRightsStreamTest(SCMRightsTest, SendrecvmsgUnixStreamTestBase):
     pass
 
 @requireAttrs(socket.socket, "sendmsg", "recvmsg_into")
 @requireAttrs(socket, "AF_UNIX", "SOL_SOCKET", "SCM_RIGHTS")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(thread, 'Threading required for this test.')
 class RecvmsgIntoSCMRightsStreamTest(RecvmsgIntoMixin, SCMRightsTest,
                                      SendrecvmsgUnixStreamTestBase):

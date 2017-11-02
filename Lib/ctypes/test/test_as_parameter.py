@@ -1,9 +1,11 @@
+import os
 import unittest
 from ctypes import *
 from ctypes.test import need_symbol
 import _ctypes_test
 
-dll = CDLL(_ctypes_test.__file__)
+
+dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 
 try:
     CALLBACK_FUNCTYPE = WINFUNCTYPE
@@ -13,6 +15,7 @@ except NameError:
 
 class POINT(Structure):
     _fields_ = [("x", c_int), ("y", c_int)]
+
 
 class BasicWrapTestCase(unittest.TestCase):
     def wrap(self, param):

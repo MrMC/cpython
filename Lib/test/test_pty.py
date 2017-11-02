@@ -111,7 +111,7 @@ class PtyTest(unittest.TestCase):
         os.close(slave_fd)
         os.close(master_fd)
 
-
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_fork(self):
         debug("calling pty.fork()")
         pid, master_fd = pty.fork()

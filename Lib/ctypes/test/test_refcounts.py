@@ -1,13 +1,17 @@
-import unittest
-from test import support
 import ctypes
 import gc
+import os
+import unittest
+from test import support
 
 MyCallback = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_int)
 OtherCallback = ctypes.CFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_ulonglong)
 
 import _ctypes_test
-dll = ctypes.CDLL(_ctypes_test.__file__)
+
+
+dll = ctypes.CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
+
 
 class RefcountTestCase(unittest.TestCase):
 

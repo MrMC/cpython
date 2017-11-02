@@ -1860,27 +1860,26 @@ class PyBuildExt(build_ext):
 
     def configure_ctypes_darwin(self, ext):
         # Darwin (OS X) uses preconfigured files, in
-        # the Modules/_ctypes/libffi_osx directory.
+        # the Modules/_ctypes/libffi_apple directory.
         srcdir = sysconfig.get_config_var('srcdir')
         ffi_srcdir = os.path.abspath(os.path.join(srcdir, 'Modules',
-                                                  '_ctypes', 'libffi_osx'))
+                                                  '_ctypes', 'libffi_apple'))
         sources = [os.path.join(ffi_srcdir, p)
-                   for p in ['ffi.c',
-                             'x86/darwin64.S',
-                             'x86/x86-darwin.S',
-                             'x86/x86-ffi_darwin.c',
-                             'x86/x86-ffi64.c',
-                             'powerpc/ppc-darwin.S',
-                             'powerpc/ppc-darwin_closure.S',
-                             'powerpc/ppc-ffi_darwin.c',
-                             'powerpc/ppc64-darwin_closure.S',
+                   for p in ['prep_cif.c',
+                             'types.c',
+                             'raw_api.c',
+                             'java_raw_api.c',
+                             'closures.c',
+                             'x86/ffi_i386.c',
+                             'x86/ffi64_x86_64.c',
+                             'x86/sysv_i386.S',
+                             'x86/unix64_x86_64.S',
                              ]]
 
         # Add .S (preprocessed assembly) to C compiler source extensions.
         self.compiler.src_extensions.append('.S')
 
-        include_dirs = [os.path.join(ffi_srcdir, 'include'),
-                        os.path.join(ffi_srcdir, 'powerpc')]
+        include_dirs = [os.path.join(ffi_srcdir, 'include')]
         ext.include_dirs.extend(include_dirs)
         ext.sources.extend(sources)
         return True

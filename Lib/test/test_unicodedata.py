@@ -6,6 +6,7 @@
 
 """
 
+import os
 import sys
 import unittest
 import hashlib
@@ -222,8 +223,10 @@ class UnicodeFunctionsTest(UnicodeDatabaseTest):
         self.assertEqual(eaw('\u2010'), 'A')
         self.assertEqual(eaw('\U00020000'), 'W')
 
+
 class UnicodeMiscTest(UnicodeDatabaseTest):
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_failed_import_during_compiling(self):
         # Issue 4367
         # Decoding \N escapes requires the unicodedata module. If it can't be

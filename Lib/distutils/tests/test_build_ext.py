@@ -47,6 +47,7 @@ class BuildExtTestCase(TempdirManager,
     def build_ext(self, *args, **kwargs):
         return build_ext(*args, **kwargs)
 
+    @unittest.skipUnless(os.name == 'nt' or (os.name == 'posix' and hasattr(os, 'fork') and os.allows_subprocesses), "distutils cannot spawn child processes")
     def test_build_ext(self):
         global ALREADY_TESTED
         copy_xxmodule_c(self.tmp_dir)
@@ -302,6 +303,7 @@ class BuildExtTestCase(TempdirManager,
         cmd.run()
         self.assertEqual(cmd.compiler, 'unix')
 
+    @unittest.skipUnless(os.name == 'nt' or (os.name == 'posix' and hasattr(os, 'fork') and os.allows_subprocesses), "distutils cannot spawn child processes")
     def test_get_outputs(self):
         tmp_dir = self.mkdtemp()
         c_file = os.path.join(tmp_dir, 'foo.c')

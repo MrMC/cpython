@@ -1,3 +1,5 @@
+import sys
 from test import regrtest
 
-regrtest.main_in_temp_cwd()
+result = regrtest.main_in_temp_cwd()
+sys.exit(result)

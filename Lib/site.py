@@ -266,6 +266,9 @@ def getusersitepackages():
         if get_config_var('PYTHONFRAMEWORK'):
             USER_SITE = get_path('purelib', 'osx_framework_user')
             return USER_SITE
+    elif sys.platform in ('ios', 'tvos', 'watchos'):
+        USER_SITE = get_path('purelib', sys.platform)
+        return USER_SITE
 
     USER_SITE = get_path('purelib', '%s_user' % os.name)
     return USER_SITE
