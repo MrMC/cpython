@@ -379,6 +379,15 @@ then
 	*-*-cygwin*)
 		ac_sys_system=Cygwin
 		;;
+	*-apple-ios)
+		ac_sys_system=iOS
+		;;
+    *-apple-tvos)
+        ac_sys_system=tvOS
+        ;;
+    *-apple-watchos)
+        ac_sys_system=watchOS
+        ;;
 	*)
 		# for now, limit cross builds to known configurations
 		MACHDEP="unknown"
@@ -421,6 +430,15 @@ if test "$cross_compiling" = yes; then
 			_host_cpu=$host_cpu
 		esac
 		;;
+	*-apple-ios)
+		case "$host_cpu" in
+		arm*)
+			_host_cpu=arm
+			;;
+		*)
+			_host_cpu=$host_cpu
+        	esac
+        	;;
 	*-*-cygwin*)
 		_host_cpu=
 		;;
@@ -496,6 +514,13 @@ case $ac_sys_system/$ac_sys_release in
   Darwin/@<:@6789@:>@.*)
     define_xopen_source=no;;
   Darwin/1@<:@0-9@:>@.*)
+    define_xopen_source=no;;
+  # On iOS, defining _POSIX_C_SOURCE also disables platform specific features.
+  iOS/*)
+    define_xopen_source=no;;
+  tvOS/*)
+    define_xopen_source=no;;
+  watchOS/*)
     define_xopen_source=no;;
   # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
   # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
@@ -1209,11 +1234,17 @@ fi
 
 AC_CHECK_TOOLS([READELF], [readelf], [:])
 if test "$cross_compiling" = yes; then
-    case "$READELF" in
-	readelf|:)
-	AC_MSG_ERROR([readelf for the host is required for cross builds])
-	;;
-    esac
+	case "$host" in
+	*-apple-*os)
+		# readelf not required for iOS cross builds.
+        	;;
+	*)
+    		case "$READELF" in
+			readelf|:)
+			AC_MSG_ERROR([readelf for the host is required for cross builds])
+			;;
+    		esac
+	esac
 fi
 AC_SUBST(READELF)
 
@@ -3389,6 +3420,10 @@ then
 	hp*|HP*) DYNLOADFILE="dynload_hpux.o";;
 	# Use dynload_next.c only on 10.2 and below, which don't have native dlopen()
 	Darwin/@<:@0156@:>@\..*) DYNLOADFILE="dynload_next.o";;
+    # Disable dynamic loading on iOS
+    iOS/*) DYNLOADFILE="dynload_stub.o";;
+    tvOS/*) DYNLOADFILE="dynload_stub.o";;
+    watchOS/*) DYNLOADFILE="dynload_stub.o";;
 	*)
 	# use dynload_shlib.c and dlopen() if we have it; otherwise stub
 	# out any dynamic loading
@@ -5535,7 +5570,17 @@ fi
 echo "creating Modules/Setup.local" >&AS_MESSAGE_FD
 if test ! -f Modules/Setup.local
 then
-	echo "# Edit this file for local setup changes" >Modules/Setup.local
+    if test ! -f Modules/Setup.$_PYTHON_HOST_PLATFORM
+    then
+        echo "# Edit this file for local setup changes" >Modules/Setup.local
+    else
+        if test -f Modules/Setup.$_PYTHON_HOST_PLATFORM.local
+        then
+            cp Modules/Setup.$_PYTHON_HOST_PLATFORM.local Modules/Setup.local
+        else
+            cat Modules/Setup.embedded Modules/Setup.$_PYTHON_HOST_PLATFORM > Modules/Setup.local
+        fi
+    fi
 fi
 
 echo "creating Makefile" >&AS_MESSAGE_FD

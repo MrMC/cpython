@@ -46,6 +46,7 @@ class TestKeywordGeneration(unittest.TestCase):
             fp.writelines(lines[:lines.index(b"#--start keywords--" + nl) + 1])
             fp.writelines(lines[lines.index(b"#--end keywords--" + nl):])
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def _generate_keywords(self, grammar_file, target_keyword_py_file):
         proc = subprocess.Popen([sys.executable,
                                  KEYWORD_FILE,

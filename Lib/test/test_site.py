@@ -50,6 +50,7 @@ def tearDownModule():
     sys.path[:] = OLD_SYS_PATH
 
 
+
 class HelperFunctionsTests(unittest.TestCase):
     """Tests for helper functions.
     """
@@ -181,6 +182,7 @@ class HelperFunctionsTests(unittest.TestCase):
 
     @unittest.skipUnless(site.ENABLE_USER_SITE, "requires access to PEP 370 "
                           "user-site (site.ENABLE_USER_SITE)")
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_s_option(self):
         usersite = site.USER_SITE
         self.assertIn(usersite, sys.path)
@@ -248,7 +250,7 @@ class HelperFunctionsTests(unittest.TestCase):
         dirs = site.getsitepackages()
 
         if (sys.platform == "darwin" and
-            sysconfig.get_config_var("PYTHONFRAMEWORK")):
+                sysconfig.get_config_var("PYTHONFRAMEWORK")):
             # OS X framework builds
             site.PREFIXES = ['Python.framework']
             dirs = site.getsitepackages()
@@ -338,6 +340,7 @@ class ImportSideEffectTests(unittest.TestCase):
         """Restore sys.path"""
         sys.path[:] = self.sys_path
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_abs_paths(self):
         # Make sure all imported modules have their __file__ and __cached__
         # attributes as absolute paths.  Arranging to put the Lib directory on
@@ -453,6 +456,7 @@ class ImportSideEffectTests(unittest.TestCase):
 
 class StartupImportTests(unittest.TestCase):
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_startup_imports(self):
         # This tests checks which modules are loaded by Python when it
         # initially starts upon startup.

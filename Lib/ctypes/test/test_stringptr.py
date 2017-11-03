@@ -1,10 +1,12 @@
+import os
 import unittest
 from test import support
 from ctypes import *
 
 import _ctypes_test
 
-lib = CDLL(_ctypes_test.__file__)
+
+lib = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 
 class StringPtrTestCase(unittest.TestCase):
 

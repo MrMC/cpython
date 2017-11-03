@@ -10,11 +10,12 @@ from distutils.util import (get_platform, convert_path, change_root,
                             check_environ, split_quoted, strtobool,
                             rfc822_escape, byte_compile,
                             grok_environment_error)
-from distutils import util # used to patch _environ_checked
+from distutils import util  # used to patch _environ_checked
 from distutils.sysconfig import get_config_vars
 from distutils import sysconfig
 from distutils.tests import support
 import _osx_support
+
 
 class UtilTestCase(support.EnvironGuard, unittest.TestCase):
 
@@ -239,6 +240,7 @@ class UtilTestCase(support.EnvironGuard, unittest.TestCase):
 
         # XXX platforms to be covered: mac
 
+    @unittest.skipUnless(os.name == 'nt' or (os.name == 'posix' and hasattr(os, 'fork') and os.allows_subprocesses), "distutils cannot spawn child processes")
     def test_check_environ(self):
         util._environ_checked = 0
         if 'HOME' in os.environ:

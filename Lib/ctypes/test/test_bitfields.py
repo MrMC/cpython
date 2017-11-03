@@ -1,7 +1,7 @@
 from ctypes import *
 from ctypes.test import need_symbol
-import unittest
 import os
+import unittest
 
 import _ctypes_test
 
@@ -24,7 +24,7 @@ class BITS(Structure):
                 ("R", c_short, 6),
                 ("S", c_short, 7)]
 
-func = CDLL(_ctypes_test.__file__).unpack_bitfields
+func = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE'])).unpack_bitfields
 func.argtypes = POINTER(BITS), c_char
 
 ##for n in "ABCDEFGHIMNOPQRS":

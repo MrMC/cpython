@@ -1,13 +1,17 @@
+import os
 import unittest
 
 from ctypes import *
 import _ctypes_test
 
-lib = CDLL(_ctypes_test.__file__)
+
+lib = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
+
 
 def three_way_cmp(x, y):
     """Return -1 if x < y, 0 if x == y and 1 if x > y"""
     return (x > y) - (x < y)
+
 
 class LibTest(unittest.TestCase):
     def test_sqrt(self):

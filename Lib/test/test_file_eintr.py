@@ -69,6 +69,7 @@ class TestFileIOSignalInterrupt:
         self.fail('Error from IO process %s:\nSTDOUT:\n%sSTDERR:\n%s\n' %
                   (why, stdout.decode(), stderr.decode()))
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def _test_reading(self, data_to_write, read_and_verify_code):
         """Generic buffered read method test harness to validate EINTR behavior.
 

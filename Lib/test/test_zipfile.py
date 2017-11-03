@@ -794,6 +794,7 @@ class PyZipFileTests(unittest.TestCase):
             self.skipTest('requires write access to the installed location')
         unlink(filename)
 
+    @unittest.skipIf(sys.dont_write_bytecode, "Test requires ability to write bytecode")
     def test_write_pyfile(self):
         self.requiresWriteAccess(os.path.dirname(__file__))
         with TemporaryFile() as t, zipfile.PyZipFile(t, "w") as zipfp:
@@ -838,6 +839,7 @@ class PyZipFileTests(unittest.TestCase):
             self.assertCompiledIn('email/__init__.py', names)
             self.assertCompiledIn('email/mime/text.py', names)
 
+    @unittest.skipIf(sys.dont_write_bytecode, "Test requires ability to write bytecode")
     def test_write_filtered_python_package(self):
         import test
         packagedir = os.path.dirname(test.__file__)

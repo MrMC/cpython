@@ -55,6 +55,10 @@ raised for division by zero and mod by zero.
 #include "Python.h"
 #include "_math.h"
 
+#ifdef __APPLE__
+#  include "TargetConditionals.h"
+#endif /* __APPLE__ */
+
 /*
    sin(pi*x), giving accurate results for all finite x (especially x
    integral or close to an integer).  This is here for use in the
@@ -1809,6 +1813,16 @@ math_hypot(PyObject *self, PyObject *args)
         return PyFloat_FromDouble(fabs(x));
     if (Py_IS_INFINITY(y))
         return PyFloat_FromDouble(fabs(y));
+#if TARGET_OS_IPHONE
+    /* hypot(x, +/-NaN) returns NaN.
+       Most libc implementations get this right, but for some reason,
+       the iOS device implementation doesn't.
+    */
+    if (Py_IS_NAN(x))
+        return PyFloat_FromDouble(fabs(x));
+    if (Py_IS_NAN(y))
+        return PyFloat_FromDouble(fabs(y));
+#endif
     errno = 0;
     PyFPE_START_PROTECT("in math_hypot", return 0);
     r = hypot(x, y);

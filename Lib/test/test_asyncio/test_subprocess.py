@@ -1,3 +1,4 @@
+import os
 import signal
 import sys
 import unittest
@@ -76,6 +77,7 @@ class SubprocessTransportTests(test_utils.TestCase):
         transport.close()
 
 
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 class SubprocessMixin:
 
     def test_stdin_stdout(self):

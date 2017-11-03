@@ -19,7 +19,7 @@ def requires_load_dynamic(meth):
     """Decorator to skip a test if not running under CPython or lacking
     imp.load_dynamic()."""
     meth = support.cpython_only(meth)
-    return unittest.skipIf(not hasattr(imp, 'load_dynamic'),
+    return unittest.skipIf(not getattr(imp, 'load_dynamic'),
                            'imp.load_dynamic() required')(meth)
 
 

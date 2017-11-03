@@ -1533,9 +1533,21 @@ def _get_temp_domain_socket():
     # just need a name - file can't be present, or we'll get an
     # 'address already in use' error.
     os.remove(fn)
+    # Check the size of the socket file name. If it exceeds 108
+    # characters (UNIX_PATH_MAX), it can't be used as a UNIX socket.
+    # In this case, fall back to a path constructed somewhere that
+    # is known to be short.
+    if len(fn) > 108:
+        fd, fn = tempfile.mkstemp(prefix='test_logging_', suffix='.sock', dir='/tmp')
+        os.close(fd)
+        # just need a name - file can't be present, or we'll get an
+        # 'address already in use' error.
+        os.remove(fn)
     return fn
 
 @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(threading, 'Threading required for this test.')
 class UnixSocketHandlerTest(SocketHandlerTest):
 
@@ -1620,6 +1632,8 @@ class DatagramHandlerTest(BaseTest):
         self.assertEqual(self.log_output, "spam\neggs\n")
 
 @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(threading, 'Threading required for this test.')
 class UnixDatagramHandlerTest(DatagramHandlerTest):
 
@@ -1707,6 +1721,8 @@ class SysLogHandlerTest(BaseTest):
         self.assertEqual(self.log_output, b'<11>h\xc3\xa4m-sp\xc3\xa4m')
 
 @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 "%s doesn't fully support UNIX sockets." % sys.platform)
 @unittest.skipUnless(threading, 'Threading required for this test.')
 class UnixSysLogHandlerTest(SysLogHandlerTest):
 

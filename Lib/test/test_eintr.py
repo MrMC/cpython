@@ -7,6 +7,7 @@ from test.support import script_helper
 
 
 @unittest.skipUnless(os.name == "posix", "only supported on Unix")
+@unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
 class EINTRTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(signal, "setitimer"), "requires setitimer()")

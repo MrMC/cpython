@@ -2706,7 +2706,12 @@ Check doctest with a non-ascii filename:
     TestResults(failed=1, attempted=1)
     """
 
-def test_CLI(): r"""
+if sys.platform in ('iOS', 'tvos', 'watchos'):
+    # Mobile platforms can't invoke doctest from the command line,
+    # so skip this test.
+    pass
+else:
+    def test_CLI(): r"""
 The doctest module can be used to run doctests against an arbitrary file.
 These tests test this CLI functionality.
 

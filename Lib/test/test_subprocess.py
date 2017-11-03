@@ -39,6 +39,9 @@ if support.PGO:
 
 mswindows = (sys.platform == "win32")
 
+if not os.allows_subprocesses:
+    raise unittest.SkipTest('Test requires support for subprocesses.')
+
 #
 # Depends on the following external programs: Python
 #

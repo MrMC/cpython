@@ -40,17 +40,24 @@ class PosixTester(unittest.TestCase):
     def testNoArgFunctions(self):
         # test posix functions which take no arguments and have
         # no side-effects which we need to cleanup (e.g., fork, wait, abort)
-        NO_ARG_FUNCTIONS = [ "ctermid", "getcwd", "getcwdb", "uname",
-                             "times", "getloadavg",
-                             "getegid", "geteuid", "getgid", "getgroups",
-                             "getpid", "getpgrp", "getppid", "getuid", "sync",
-                           ]
+        NO_ARG_FUNCTIONS = [
+            "ctermid", "getcwd", "getcwdb", "uname",
+            "times", "getloadavg",
+            "getegid", "geteuid", "getgid",
+            "getpid", "getpgrp", "getppid", "getuid", "sync",
+        ]
+
+        if sys.platform not in ('ios', 'tvos', 'watchos'):
+            NO_ARG_FUNCTIONS.append("getgroups")
 
         for name in NO_ARG_FUNCTIONS:
             posix_func = getattr(posix, name, None)
             if posix_func is not None:
-                posix_func()
-                self.assertRaises(TypeError, posix_func, 1)
+                try:
+                    posix_func()
+                    self.assertRaises(TypeError, posix_func, 1)
+                except Exception as e:
+                    self.fail('Problem invoking %s: %s' % (name, e))
 
     @unittest.skipUnless(hasattr(posix, 'getresuid'),
                          'test needs posix.getresuid()')
@@ -537,9 +544,10 @@ class PosixTester(unittest.TestCase):
             check_stat(uid, gid)
             self.assertRaises(OSError, chown_func, first_param, 0, -1)
             check_stat(uid, gid)
-            if 0 not in os.getgroups():
-                self.assertRaises(OSError, chown_func, first_param, -1, 0)
-                check_stat(uid, gid)
+            if hasattr(os, 'getgroups') and sys.platform not in ('ios', 'tvos', 'watchos'):
+                if 0 not in os.getgroups():
+                    self.assertRaises(OSError, chown_func, first_param, -1, 0)
+                    check_stat(uid, gid)
         # test illegal types
         for t in str, float:
             self.assertRaises(TypeError, chown_func, first_param, t(uid), gid)
@@ -822,8 +830,8 @@ class PosixTester(unittest.TestCase):
         group = pwd.getpwuid(os.getuid())[3]
         self.assertIn(group, posix.getgrouplist(user, group))
 
-
     @unittest.skipUnless(hasattr(os, 'getegid'), "test needs os.getegid()")
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_getgroups(self):
         with os.popen('id -G 2>/dev/null') as idg:
             groups = idg.read().strip()
@@ -1077,7 +1085,7 @@ class PosixTester(unittest.TestCase):
         self.assertIsInstance(hi, int)
         self.assertGreaterEqual(hi, lo)
         # OSX evidently just returns 15 without checking the argument.
-        if sys.platform != "darwin":
+        if sys.platform not in ('darwin', 'ios', 'tvos', 'watchos'):
             self.assertRaises(OSError, posix.sched_get_priority_min, -23)
             self.assertRaises(OSError, posix.sched_get_priority_max, -23)
 
@@ -1248,6 +1256,7 @@ class PosixTester(unittest.TestCase):
         self.assertFalse(os.path.exists(fn))
         open(fn, 'wb').close()
         self.assertRaises(ValueError, os.stat, fn_with_NUL)
+
 
 class PosixGroupsTester(unittest.TestCase):
 

@@ -20,6 +20,8 @@
 #  pragma weak statvfs
 #  pragma weak fstatvfs
 
+#  include "TargetConditionals.h"
+
 #endif /* __APPLE__ */
 
 #define PY_SSIZE_T_CLEAN
@@ -197,6 +199,22 @@ corresponding Unix manual entries for more information on calls.");
 #endif  /* _MSC_VER */
 #endif  /* ! __WATCOMC__ || __QNX__ */
 
+// tvOS and watchOS don't provide a number of important POSIX functions.
+#if defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) || defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
+#  undef HAVE_EXECV
+#  undef HAVE_FORK
+#  undef HAVE_FORK1
+#  undef HAVE_FORKPTY
+#  undef HAVE_GETGROUPS
+#  undef HAVE_SCHED_H
+#  undef HAVE_SENDFILE
+#  undef HAVE_SETPRIORITY
+#  undef HAVE_SPAWNV
+#  undef HAVE_WAIT
+#  undef HAVE_WAIT3
+#  undef HAVE_WAIT4
+#  undef HAVE_WAITPID
+#endif /* TVOS || WATCHOS */
 
 /*[clinic input]
 # one of the few times we lie about this name!
@@ -1223,7 +1241,9 @@ win32_get_reparse_tag(HANDLE reparse_point_handle, ULONG *reparse_tag)
 #include <crt_externs.h>
 static char **environ;
 #elif !defined(_MSC_VER) && ( !defined(__WATCOMC__) || defined(__QNX__) )
+#if !defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) && !defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
 extern char **environ;
+#endif
 #endif /* !_MSC_VER */
 
 static PyObject *
@@ -1274,7 +1294,7 @@ convertenviron(void)
         Py_DECREF(k);
         Py_DECREF(v);
     }
-#else
+#elif !defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) && !defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
     if (environ == NULL)
         return d;
     /* This part ignores errors */
@@ -4135,7 +4155,12 @@ os_system_impl(PyObject *module, PyObject *command)
     long result;
     const char *bytes = PyBytes_AsString(command);
     Py_BEGIN_ALLOW_THREADS
+#if defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) || defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
+    result = -1;
+    errno = ENOTSUP;
+#else
     result = system(bytes);
+#endif
     Py_END_ALLOW_THREADS
     return result;
 }

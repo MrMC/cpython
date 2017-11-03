@@ -4,6 +4,7 @@ from test.support import (verbose, refcount_test, run_unittest,
                           temp_dir, requires_type_collecting)
 from test.support.script_helper import assert_python_ok, make_script
 
+import os
 import sys
 import time
 import gc
@@ -651,6 +652,8 @@ class GCTests(unittest.TestCase):
             del x
             gc.set_debug(%s)
         """
+
+        @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
         def run_command(code):
             p = subprocess.Popen([sys.executable, "-Wd", "-c", code],
                 stdout=subprocess.PIPE,

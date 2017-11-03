@@ -5,12 +5,16 @@ import os
 from io import BytesIO
 from test.support import run_unittest
 
-from distutils import cygwinccompiler
-from distutils.cygwinccompiler import (check_config_h,
-                                       CONFIG_H_OK, CONFIG_H_NOTOK,
-                                       CONFIG_H_UNCERTAIN, get_versions,
-                                       get_msvcr)
+# Importing cygwinccompiler attempts to import other tools
+# that may not exist unless you're on win32.
+if sys.platform == 'win32':
+    from distutils import cygwinccompiler
+    from distutils.cygwinccompiler import (check_config_h,
+                                           CONFIG_H_OK, CONFIG_H_NOTOK,
+                                           CONFIG_H_UNCERTAIN, get_versions,
+                                           get_msvcr)
 from distutils.tests import support
+
 
 class FakePopen(object):
     test_class = None
@@ -25,6 +29,7 @@ class FakePopen(object):
             self.stdout = os.popen(cmd, 'r')
 
 
+@unittest.skipUnless(sys.platform == "win32", "These tests are only for win32")
 class CygwinCCompilerTestCase(support.TempdirManager,
                               unittest.TestCase):
 
@@ -118,7 +123,7 @@ class CygwinCCompilerTestCase(support.TempdirManager,
     def test_get_msvcr(self):
 
         # none
-        sys.version  = ('2.6.1 (r261:67515, Dec  6 2008, 16:42:21) '
+        sys.version = ('2.6.1 (r261:67515, Dec  6 2008, 16:42:21) '
                         '\n[GCC 4.0.1 (Apple Computer, Inc. build 5370)]')
         self.assertEqual(get_msvcr(), None)
 

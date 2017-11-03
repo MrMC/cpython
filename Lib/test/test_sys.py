@@ -21,6 +21,7 @@ try:
 except ImportError:
     threading = None
 
+
 class SysModuleTest(unittest.TestCase):
 
     def setUp(self):
@@ -256,6 +257,7 @@ class SysModuleTest(unittest.TestCase):
         finally:
             sys.setrecursionlimit(oldlimit)
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_recursionlimit_fatalerror(self):
         # A fatal error occurs if a second recursion limit is hit when recovering
         # from a first one.
@@ -583,6 +585,7 @@ class SysModuleTest(unittest.TestCase):
     def test_clear_type_cache(self):
         sys._clear_type_cache()
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_ioencoding(self):
         env = dict(os.environ)
 
@@ -630,6 +633,7 @@ class SysModuleTest(unittest.TestCase):
                          'requires OS support of non-ASCII encodings')
     @unittest.skipUnless(sys.getfilesystemencoding() == locale.getpreferredencoding(False),
                          'requires FS encoding to match locale')
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_ioencoding_nonascii(self):
         env = dict(os.environ)
 
@@ -642,6 +646,7 @@ class SysModuleTest(unittest.TestCase):
 
     @unittest.skipIf(sys.base_prefix != sys.prefix,
                      'Test is not venv-compatible')
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_executable(self):
         # sys.executable should be absolute
         self.assertEqual(os.path.abspath(sys.executable), sys.executable)
@@ -676,6 +681,7 @@ class SysModuleTest(unittest.TestCase):
             expected = None
         self.check_fsencoding(fs_encoding, expected)
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def c_locale_get_error_handler(self, isolated=False, encoding=None):
         # Force the POSIX locale
         env = os.environ.copy()

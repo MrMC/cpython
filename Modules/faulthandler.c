@@ -1,3 +1,7 @@
+#ifdef __APPLE__
+#  include "TargetConditionals.h"
+#endif /* __APPLE__ */
+
 #include "Python.h"
 #include "pythread.h"
 #include <signal.h>
@@ -13,6 +17,11 @@
 #ifdef HAVE_SYS_RESOURCE_H
 #  include <sys/resource.h>
 #endif
+
+// tvOS and watchOS don't provide a number of important POSIX functions.
+#if defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__) || defined(__ENVIRONMENT_WATCH_OS_VERSION_MIN_REQUIRED__)
+#  undef HAVE_SIGALTSTACK
+#endif /* TVOS || WATCHOS */
 
 /* Allocate at maximum 100 MB of the stack to raise the stack overflow */
 #define STACK_OVERFLOW_MAX_SIZE (100*1024*1024)

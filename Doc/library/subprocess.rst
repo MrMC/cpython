@@ -25,6 +25,11 @@ modules and functions can be found in the following sections.
 
    :pep:`324` -- PEP proposing the subprocess module
 
+:mod:`subprocess` can only be used on platforms that support subprocess
+creation. Some platforms (especially mobile platforms) may not support
+subprocesses; if :data:`os.allows_subprocesses` is `False`, any calls in
+this module that request a subprocess be created will raise a
+:exc:`RuntimeError`.
 
 Using the :mod:`subprocess` Module
 ----------------------------------

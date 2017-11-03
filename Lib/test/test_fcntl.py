@@ -23,7 +23,7 @@ def get_lockdata():
         start_len = "qq"
 
     if (sys.platform.startswith(('netbsd', 'freebsd', 'openbsd', 'bsdos'))
-        or sys.platform == 'darwin'):
+            or sys.platform in ('darwin', 'ios', 'tvos', 'watchos')):
         if struct.calcsize('l') == 8:
             off_t = 'l'
             pid_t = 'i'
@@ -45,11 +45,14 @@ def get_lockdata():
 
 lockdata = get_lockdata()
 
+
 class BadFile:
     def __init__(self, fn):
         self.fn = fn
+
     def fileno(self):
         return self.fn
+
 
 class TestFcntl(unittest.TestCase):
 

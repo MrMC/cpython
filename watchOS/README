@@ -1,0 +1,161 @@
+========================
+Python on watchOS README
+========================
+
+:Authors:
+    Russell Keith-Magee (2015)
+
+:Version: 3.5.2
+
+This document provides a overview of eccentricities of building and using
+Python on watchOS devices (i.e., AppleTV).
+
+Build instructions
+==================
+
+The watchOS build must be run on an Mac with XCode installed. To build the watchOS
+framework, unpack the Python sources, move into the watchOS subdirectory, and
+run ``make``. There are no configuration options to this build process -
+it will use XCode utilities to identify the location of compilers,
+resource directories, and so on.
+
+The build process will configure and build Python 3 times, producing:
+
+    * A "host" version of Python
+    * A version of Python compiled for the i386 watchOS Simulator
+    * A version of Python compiled for ARMv7k watchOS devices
+
+Build products will be "installed" into watchOS/build. The built products will
+then be combined into a single "fat" ``Python.framework`` that can be added to
+an XCode project. The resulting framework will be located in the root
+directory of the Python source tree.
+
+A ``make clean`` target also exists to clean out all build products;
+``make distclean`` will clean out all user-specific files from the test and
+sample projects.
+
+Test instructions
+-----------------
+
+The ``Tools`` directory contains an ``watchOS-Test`` project that enables you to
+run  the Python regression test suite. When you run ``make`` in the watchOS
+directory,  a copy of ``Python.framework`` will also be installed into this
+test project.
+
+To run the test project, load the project into XCode, and run (either on a
+device or in the simulator). The test suite takes around 10 minutes to run on
+an Apple Watch.
+
+.. note:: If you run the test project in debug mode, the XCode debugger will
+   stop whenever a signal is raised. The Python regression test suite checks
+   a number of signal handlers, and the test suite will stop mid-execution
+   when this occurs.
+
+   To disable this signal handling, set a breakpoint at the start of
+   ``main.c``; when execution stops at the breakpoint, run the following
+   commands in the debugger (at the ``(lldb)`` prompt in the console log
+   window)::
+
+       process handle SIGPIPE -n true -p true -s false
+       process handle SIGINT -n true -p true -s false
+       process handle SIGXFSZ -n true -p true -s false
+       process handle SIGUSR1 -n true -p true -s false
+       process handle SIGUSR2 -n true -p true -s false
+
+   Unfortunately, this has to be done every time the test suite is executed.
+
+watchOS-specific details
+====================
+
+* ``import sys; sys.platform`` will report as `'watchos'`, regardless of whether you
+  are on a simulator or a real platform.
+
+* ``import platform; platform.machine()`` will return the device identifier.
+  For example, an origianl Apple Watch will return `'Watch1,1'`
+
+* The following modules are not currently supported:
+
+   - ``bsddb``
+   - ``bz2``
+   - ``curses``
+   - ``dbm``
+   - ``gdbm``
+   - ``hotshot``
+   - ``idlelib``
+   - ``lzma``
+   - ``nis``
+   - ``ossaudiodev``
+   - ``readline``
+   - ``spwd``
+   - ``sqlite3``
+   - ``ssl``
+   - ``tkinter``
+   - ``turtledemo``
+   - ``wsgiref``
+
+* Due to limitations in using dynamic loading on watchOS, binary Python modules must be
+  statically-linked into the executable. The framework package produced by the watchOS
+  ``make install`` statically links all the supported standard library modules.
+  If you have a third-party Python binary module, you'll need to incorporate the
+  source files for that module into the sources for your own app.
+
+  If you want to add or remove a binary module from the set that is included in the
+  Python library, you can do so by providing module setup files for each platform.
+  There are two default module configuration files:
+
+    - ``Modules/Setup.watchOS-aarch64`` for ARM64 watchOS builds
+    - ``Modules/Setup.watchOS-x86_64`` for x86_64 watchOS simulator builds
+
+  If you copy these files to a ``.local`` version (e.g.,
+  ``Modules/Setup.watchOS-aarch64.local``), the local version will override the
+  default. You can then make modifications to the modules that will be included
+  in the watchOS framework, and the flags passed to the compiler when compiling those
+  modules.
+
+Adding Python to an watchOS project
+===============================
+
+The watchOS subdirectory contains a sample XCode 6.1 project to demonstrate how
+Python can be added to an watchOS project. After building the Python watchOS framework,
+copy it into the ``watchOS/XCode-sample`` directory. You should end up with a directory
+structure that looks like this::
+
+    XCode-sample/
+        Python.framework/       - Manually copied into the project
+        app/
+            sample/
+                __init__.py
+                main.py         - The Python script to be executed
+        app_packages/           - A directory that will be added to the `PYTHONPATH` at runtime
+        sample
+            Images.xcassets
+            en.lproj
+            main.c              - The main() definition for the watchOS application
+            sample-Info.plist
+            sample-Prefix.pch
+        sample.xcodeproj        - The XCode project file
+
+If you open the project file is project and run it, you should get output
+similar to the following::
+
+    2015-03-14 22:15:19.595 sample[84454:22100187] PythonHome is: /Users/rkm/Library/Developer/CoreSimulator/Devices/19FE988F-E5C3-4A6C-8752-C12DE9BF079D/data/Containers/Bundle/Application/A949B323-FD20-4C76-B370-99AFF294E9D5/sample.app
+    2015-03-14 22:15:19.597 sample[84454:22100187] Initializing Python runtime
+    2015-03-14 22:15:19.758 sample[84454:22100187] Running /Users/rkm/Library/Developer/CoreSimulator/Devices/19FE988F-E5C3-4A6C-8752-C12DE9BF079D/data/Containers/Bundle/Application/A949B323-FD20-4C76-B370-99AFF294E9D5/sample.app/app/sample/main.py
+    Hello, World.
+    2015-03-14 22:15:19.792 sample[84454:22100187] Leaving
+
+You can now modify the provide Python source code, import and use
+code from the Python standard library, and add third-party modules to
+app_packages.
+
+The sample app is a console-only app, so it isn't of any real practical use.
+Python can be embedded into any Objective-C project using the normal Python
+APIs for embedding; but if you want to write a full watchOS app in Python, or
+you want to access watchOS services from within embedded code, you'll need to
+bridge between the Objective-C environment and the Python environment.
+This binding isn't something that Python does out of the box; you'll need
+to use a third-party library like `Rubicon ObjC`_, `Pyobjus`_ or `PyObjC`_.
+
+.. _Rubicon ObjC: http://pybee.org/rubicon
+.. _Pyobjus: http://pyobjus.readthedocs.org/
+.. _PyObjC: https://pythonhosted.org/pyobjc/

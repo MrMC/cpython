@@ -2,8 +2,11 @@ import webbrowser
 import unittest
 import subprocess
 from unittest import mock
+import sys
 from test import support
 
+if sys.platform in ('ios', 'tvos', 'watchos'):
+    raise unittest.SkipTest("Can't run webbrowser tests on %s" % sys.platform)
 
 URL = 'http://www.example.com'
 CMD_NAME = 'test'

@@ -7,7 +7,9 @@ Later...
 
 from ctypes import *
 from ctypes.test import need_symbol
-import sys, unittest
+import os
+import sys
+import unittest
 
 try:
     WINFUNCTYPE
@@ -16,15 +18,22 @@ except NameError:
     WINFUNCTYPE = CFUNCTYPE
 
 import _ctypes_test
-dll = CDLL(_ctypes_test.__file__)
+
+
+dll = CDLL(getattr(_ctypes_test, '__file__', os.environ['TEST_EXECUTABLE']))
 if sys.platform == "win32":
     windll = WinDLL(_ctypes_test.__file__)
 
+
 class POINT(Structure):
     _fields_ = [("x", c_int), ("y", c_int)]
+
+
 class RECT(Structure):
     _fields_ = [("left", c_int), ("top", c_int),
                 ("right", c_int), ("bottom", c_int)]
+
+
 class FunctionTestCase(unittest.TestCase):
 
     def test_mro(self):

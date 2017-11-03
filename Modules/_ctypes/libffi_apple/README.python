@@ -1,0 +1,14 @@
+This directory contains the generated source code for running libffi
+on iOS platforms (physical and simulator). It contains support for
+ARMv7, i386 and x86_64 platforms.
+
+libffi requires a code-generation step for Apple platforms. This code
+generation is performed using the `generate-darwin-source-and-headers.py`
+script in the home directory of the libffi project.
+
+This directory is the combined output of the darwin_common and darwin_ios
+generated code directories. It has been pruned of source files that are
+not needed for ctypes.
+
+The code in this directory uses the source code from a pre-release version
+and patched verion of libffi 4.

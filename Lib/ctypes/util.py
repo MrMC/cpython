@@ -67,7 +67,7 @@ if os.name == "nt":
                 return fname
         return None
 
-if os.name == "posix" and sys.platform == "darwin":
+if os.name == "posix" and sys.platform in ('darwin', 'ios', 'tvos', 'watchos'):
     from ctypes.macholib.dyld import dyld_find as _dyld_find
     def find_library(name):
         possible = ['lib%s.dylib' % name,

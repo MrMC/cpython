@@ -2,6 +2,7 @@ from ctypes import *
 from ctypes.test import need_symbol
 import unittest
 
+
 class StringBufferTestCase(unittest.TestCase):
 
     def test_buffer(self):

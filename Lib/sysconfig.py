@@ -78,6 +78,33 @@ _INSTALL_SCHEMES = {
         'scripts': '{userbase}/bin',
         'data': '{userbase}',
         },
+    'ios': {
+        'stdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'platstdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'purelib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'platlib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'include': '{installed_base}/include',
+        'scripts': '{installed_base}/bin',
+        'data': '{installed_base}/Resources',
+        },
+    'tvos': {
+        'stdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'platstdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'purelib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'platlib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'include': '{installed_base}/include',
+        'scripts': '{installed_base}/bin',
+        'data': '{installed_base}/Resources',
+        },
+    'watchos': {
+        'stdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'platstdlib': '{installed_base}/lib/python%s' % sys.version[:3],
+        'purelib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'platlib': '{installed_base}/lib/python%s/site-packages' % sys.version[:3],
+        'include': '{installed_base}/include',
+        'scripts': '{installed_base}/bin',
+        'data': '{installed_base}/Resources',
+        },
     }
 
 _SCHEME_KEYS = ('stdlib', 'platstdlib', 'purelib', 'platlib', 'include',
@@ -174,6 +201,8 @@ def _get_default_scheme():
     if os.name == 'posix':
         # the default scheme for posix is posix_prefix
         return 'posix_prefix'
+    elif sys.platform in ('ios', 'tvos', 'watchos'):
+        return sys.platform
     return os.name
 
 
@@ -198,6 +227,11 @@ def _getuserbase():
             else:
                 return joinuser("~", "Library", framework, "%d.%d" %
                                 sys.version_info[:2])
+    elif sys.platform in ('ios', 'tvos', 'watchos'):
+        if env_base:
+            return env_base
+        else:
+            return _BASE_PREFIX
 
     if env_base:
         return env_base

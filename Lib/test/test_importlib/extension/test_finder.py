@@ -3,10 +3,13 @@ from .. import util
 
 machinery = util.import_importlib('importlib.machinery')
 
+import sys
 import unittest
 import warnings
 
 
+@unittest.skipIf(sys.platform in ('ios', 'tvos', 'watchos'),
+                 '%s does not support dynamic loading' % sys.platform)
 class FinderTests(abc.FinderTests):
 
     """Test the finder for extension modules."""

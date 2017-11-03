@@ -1551,6 +1551,12 @@ case $os in
 		;;
 	-ios)
 		;;
+	-ios*)
+		;;
+	-tvos*)
+		;;
+	-watchos*)
+		;;
 	-none)
 		;;
 	*)

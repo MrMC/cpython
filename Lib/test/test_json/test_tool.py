@@ -7,6 +7,7 @@ from test import support
 from test.support.script_helper import assert_python_ok
 
 
+
 class TestTool(unittest.TestCase):
     data = """
 
@@ -60,6 +61,7 @@ class TestTool(unittest.TestCase):
     ]
     """)
 
+    @unittest.skipUnless(os.allows_subprocesses, 'Test requires support for subprocesses.')
     def test_stdin_stdout(self):
         args = sys.executable, '-m', 'json.tool'
         with Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE) as proc:

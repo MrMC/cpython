@@ -1,5 +1,6 @@
 import getpass
 import os
+import sys
 import unittest
 from io import BytesIO, StringIO, TextIOWrapper
 from unittest import mock
@@ -13,6 +14,7 @@ try:
     import pwd
 except ImportError:
     pwd = None
+
 
 @mock.patch('os.environ')
 class GetpassGetuserTest(unittest.TestCase):
