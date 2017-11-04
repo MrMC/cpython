@@ -379,12 +379,12 @@ then
 	*-apple-ios)
 		ac_sys_system=iOS
 		;;
-    *-apple-tvos)
-        ac_sys_system=tvOS
-        ;;
-    *-apple-watchos)
-        ac_sys_system=watchOS
-        ;;
+	*-apple-tvos)
+		ac_sys_system=tvOS
+		;;
+	*-apple-watchos)
+		ac_sys_system=watchOS
+		;;
 	*)
 		# for now, limit cross builds to known configurations
 		MACHDEP="unknown"
@@ -427,15 +427,15 @@ if test "$cross_compiling" = yes; then
 			_host_cpu=$host_cpu
 		esac
 		;;
-	*-apple-ios)
+	*-apple-*)
 		case "$host_cpu" in
 		arm*)
 			_host_cpu=arm
 			;;
 		*)
 			_host_cpu=$host_cpu
-        	esac
-        	;;
+		esac
+		;;
 	*-*-cygwin*)
 		_host_cpu=
 		;;
@@ -5439,4 +5439,3 @@ if test "$Py_OPT" = 'false' -a "$Py_DEBUG" != 'true'; then
     echo "" >&AS_MESSAGE_FD
     echo "" >&AS_MESSAGE_FD
 fi
-
