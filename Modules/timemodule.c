@@ -30,6 +30,11 @@
 #endif /* MS_WINDOWS */
 #endif /* !__WATCOMC__ || __QNX__ */
 
+#ifdef __APPLE__
+#  include "TargetConditionals.h"
+#endif /* __APPLE__ */
+
+
 /* Forward declarations */
 static int pysleep(_PyTime_t);
 static PyObject* floattime(_Py_clock_info_t *info);
@@ -181,11 +186,13 @@ time_clock_settime(PyObject *self, PyObject *args)
     if (_PyTime_AsTimespec(t, &tp) == -1)
         return NULL;
 
+#if !TARGET_OS_IPHONE
     ret = clock_settime((clockid_t)clk_id, &tp);
     if (ret != 0) {
         PyErr_SetFromErrno(PyExc_OSError);
         return NULL;
     }
+#endif
     Py_RETURN_NONE;
 }
 

@@ -3,6 +3,7 @@
 #####################################################################
 
 _bisect _bisectmodule.c
+_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
 _codecs_cn cjkcodecs/_codecs_cn.c
 _codecs_hk cjkcodecs/_codecs_hk.c
 _codecs_iso2022 cjkcodecs/_codecs_iso2022.c
@@ -29,8 +30,6 @@ _sha1 sha1module.c
 _sha3 _sha3/sha3module.c
 _sha256 sha256module.c
 _sha512 sha512module.c
-_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
-_hashlib _hashopenssl.c -I$(srcdir)/../OpenSSL.framework/Headers -framework OpenSSL -F$(srcdir)/..
 _socket socketmodule.c
 _sqlite3 -I$(srcdir)/Modules/_sqlite -DMODULE_NAME='\"sqlite3\"' -DSQLITE_OMIT_LOAD_EXTENSION -lsqlite3 \
     _sqlite/cache.c \
@@ -57,11 +56,12 @@ pyexpat expat/xmlparse.c \
     expat/xmltok.c \
     pyexpat.c \
     -I$(srcdir)/Modules/expat \
-    -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI
+    -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI -DXML_DEV_URANDOM
 resource resource.c
 select selectmodule.c
 syslog syslogmodule.c
 termios termios.c
+time timemodule.c
 unicodedata unicodedata.c
 zlib zlibmodule.c -I$(prefix)/include -lz
 
@@ -72,6 +72,7 @@ _ctypes_test _ctypes/_ctypes_test.c
 _testbuffer _testbuffer.c
 _testcapi  _testcapimodule.c
 _testimportmultiple _testimportmultiple.c
+_testmultiphase _testmultiphase.c
 
 #####################################################################
 # Modules that require additional frameworks
@@ -81,6 +82,7 @@ _testimportmultiple _testimportmultiple.c
 #_curses_panel _curses_panel.c -lpanel -lncurses
 #_dbm _dbmmodule.c
 #_gdbm _gdbmmodule.c -I/usr/local/include -L/usr/local/lib -lgdbm
+#_hashlib _hashopenssl.c -I$(srcdir)/../OpenSSL.framework/Headers -framework OpenSSL -F$(srcdir)/..
 #_lzma
 #_ssl _ssl.c \
 #   -I$(SSL)/include -I$(SSL)/include/openssl \
