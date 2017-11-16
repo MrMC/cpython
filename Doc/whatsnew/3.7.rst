@@ -255,6 +255,12 @@ contextlib
 :func:`contextlib.asynccontextmanager` has been added. (Contributed by
 Jelle Zijlstra in :issue:`29679`.)
 
+cProfile
+--------
+
+cProfile command line now accepts `-m module_name` as an alternative to
+script path. (Contributed by Sanyam Khurana in :issue:`21862`.)
+
 crypt
 -----
 
@@ -275,6 +281,13 @@ distutils
 README.rst is now included in the list of distutils standard READMEs and
 therefore included in source distributions.
 (Contributed by Ryan Gonzalez in :issue:`11913`.)
+
+http.client
+-----------
+
+Add Configurable *blocksize* to ``HTTPConnection`` and
+``HTTPSConnection`` for improved upload throughput.
+(Contributed by Nir Soffer in :issue:`31945`.)
 
 http.server
 -----------
@@ -359,6 +372,10 @@ Add new clock identifiers:
   the time the system has been running and not suspended, providing accurate
   uptime measurement, both absolute and interval.
 
+Added functions :func:`time.thread_time` and :func:`time.thread_time_ns`
+to get per-thread CPU time measurements.
+(Contributed by Antoine Pitrou in :issue:`32025`.)
+
 unittest.mock
 -------------
 
@@ -428,8 +445,8 @@ Optimizations
   INADA Naoki in :issue:`26110`.)
 
 * Searching some unlucky Unicode characters (like Ukrainian capital "Є")
-  in a string was to 25 times slower than searching other characters.
-  Now it is slower only by 3 times in worst case.
+  in a string was up to 25 times slower than searching other characters.
+  Now it is slower only by 3 times in the worst case.
   (Contributed by Serhiy Storchaka in :issue:`24821`.)
 
 * Fast implementation from standard C library is now used for functions
@@ -450,7 +467,7 @@ Optimizations
 
 * :func:`re.compile` now converts ``flags`` parameter to int object if
   it is ``RegexFlag``.  It is now as fast as Python 3.5, and faster than
-  Python 3.6 about 10% depending on the pattern.
+  Python 3.6 by about 10% depending on the pattern.
   (Contributed by INADA Naoki in :issue:`31671`.)
 
 * :meth:`selectors.EpollSelector.modify`, :meth:`selectors.PollSelector.modify`
@@ -617,6 +634,24 @@ This section lists previously described changes and other bugfixes
 that may require changes to your code.
 
 
+Changes in Python behavior
+--------------------------
+
+* Due to an oversight, earlier Python versions erroneously accepted the
+  following syntax::
+
+      f(1 for x in [1],)
+
+      class C(1 for x in [1]):
+          pass
+
+  Python 3.7 now correctly raises a :exc:`SyntaxError`, as a generator
+  expression always needs to be directly inside a set of parentheses
+  and cannot have a comma on either side, and the duplication of the
+  parentheses can be omitted only on calls.
+  (Contributed by Serhiy Storchaka in :issue:`32012` and :issue:`32023`.)
+
+
 Changes in the Python API
 -------------------------
 
@@ -711,11 +746,11 @@ PEP 545: Python Documentation Translations
 :pep:`545` describes the process to translate Python documentation,
 and two translations have been added:
 
-- Japanese: https://docs.python.org/ja/ and associated github
+- Japanese: https://docs.python.org/ja/ and associated GitHub
   repository: https://github.com/python/python-docs-ja
 
-- French: https://docs.python.org/fr/ and associated github
+- French: https://docs.python.org/fr/ and associated GitHub
   repository: https://github.com/python/python-docs-fr
 
 (Contributed by Julien Palard, Inada Naoki, and Victor Stinner in
-:issue:`issue26546`.)
+:issue:`26546`.)
