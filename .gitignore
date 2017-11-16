@@ -23,7 +23,7 @@ Lib/lib2to3/*.pickle
 Lib/test/data/*
 Lib/_sysconfigdata.py
 Lib/plat-mac/errors.rsrc.df.rsrc
-Makefile
+/Makefile
 Makefile.pre
 Misc/python.pc
 Misc/python-config.sh
