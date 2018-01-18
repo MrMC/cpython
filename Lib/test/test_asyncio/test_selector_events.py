@@ -17,6 +17,7 @@ from asyncio.selector_events import _SelectorTransport
 from asyncio.selector_events import _SelectorSslTransport
 from asyncio.selector_events import _SelectorSocketTransport
 from asyncio.selector_events import _SelectorDatagramTransport
+from asyncio.selector_events import _set_nodelay
 
 
 MOCK_ANY = mock.ANY
@@ -188,6 +189,7 @@ class BaseSelectorEventLoopTests(test_utils.TestCase):
         sock = mock.Mock()
         sock.fileno.return_value = 10
         sock.recv.side_effect = BlockingIOError
+        sock.gettimeout.return_value = 0.0
 
         self.loop.add_reader = mock.Mock()
         self.loop.remove_reader = mock.Mock()
@@ -268,6 +270,7 @@ class BaseSelectorEventLoopTests(test_utils.TestCase):
         sock = mock.Mock()
         sock.fileno.return_value = 10
         sock.send.side_effect = BlockingIOError
+        sock.gettimeout.return_value = 0.0
 
         self.loop.add_writer = mock.Mock()
         self.loop.remove_writer = mock.Mock()
@@ -1826,6 +1829,32 @@ class SelectorDatagramTransportTests(test_utils.TestCase):
             test_utils.MockPattern(
                 'Fatal error on transport\nprotocol:.*\ntransport:.*'),
             exc_info=(ConnectionRefusedError, MOCK_ANY, MOCK_ANY))
+
+
+class TestSelectorUtils(test_utils.TestCase):
+    def check_set_nodelay(self, sock):
+        opt = sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY)
+        self.assertFalse(opt)
+
+        _set_nodelay(sock)
+
+        opt = sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY)
+        self.assertTrue(opt)
+
+    @unittest.skipUnless(hasattr(socket, 'TCP_NODELAY'),
+                         'need socket.TCP_NODELAY')
+    def test_set_nodelay(self):
+        sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM,
+                             proto=socket.IPPROTO_TCP)
+        with sock:
+            self.check_set_nodelay(sock)
+
+        sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM,
+                             proto=socket.IPPROTO_TCP)
+        with sock:
+            sock.setblocking(False)
+            self.check_set_nodelay(sock)
+
 
 if __name__ == '__main__':
     unittest.main()

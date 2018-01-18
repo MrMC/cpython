@@ -60,6 +60,31 @@ def add_dir_to_list(dirlist, dir):
             return
     dirlist.insert(0, dir)
 
+def sysroot_paths(make_vars, subdirs):
+    """Get the paths of sysroot sub-directories.
+
+    * make_vars: a sequence of names of variables of the Makefile where
+      sysroot may be set.
+    * subdirs: a sequence of names of subdirectories used as the location for
+      headers or libraries.
+    """
+
+    dirs = []
+    for var_name in make_vars:
+        var = sysconfig.get_config_var(var_name)
+        if var is not None:
+            m = re.search(r'--sysroot=([^"]\S*|"[^"]+")', var)
+            if m is not None:
+                sysroot = m.group(1).strip('"')
+                for subdir in subdirs:
+                    if os.path.isabs(subdir):
+                        subdir = subdir[1:]
+                    path = os.path.join(sysroot, subdir)
+                    if os.path.isdir(path):
+                        dirs.append(path)
+                break
+    return dirs
+
 def macosx_sdk_root():
     """
     Return the directory of the current OSX SDK,
@@ -544,18 +569,23 @@ class PyBuildExt(build_ext):
             add_dir_to_list(self.compiler.include_dirs,
                             sysconfig.get_config_var("INCLUDEDIR"))
 
+        system_lib_dirs = ['/lib64', '/usr/lib64', '/lib', '/usr/lib']
+        system_include_dirs = ['/usr/include']
         # lib_dirs and inc_dirs are used to search for files;
         # if a file is found in one of those directories, it can
         # be assumed that no additional -I,-L directives are needed.
         if not cross_compiling:
-            lib_dirs = self.compiler.library_dirs + [
-                '/lib64', '/usr/lib64',
-                '/lib', '/usr/lib',
-                ]
-            inc_dirs = self.compiler.include_dirs + ['/usr/include']
+            lib_dirs = self.compiler.library_dirs + system_lib_dirs
+            inc_dirs = self.compiler.include_dirs + system_include_dirs
         else:
-            lib_dirs = self.compiler.library_dirs[:]
-            inc_dirs = self.compiler.include_dirs[:]
+            # Add the sysroot paths. 'sysroot' is a compiler option used to
+            # set the logical path of the standard system headers and
+            # libraries.
+            lib_dirs = (self.compiler.library_dirs +
+                        sysroot_paths(('LDFLAGS', 'CC'), system_lib_dirs))
+            inc_dirs = (self.compiler.include_dirs +
+                        sysroot_paths(('CPPFLAGS', 'CFLAGS', 'CC'),
+                                      system_include_dirs))
         exts = []
         missing = []
 
@@ -1335,12 +1365,19 @@ class PyBuildExt(build_ext):
             # Sun yellow pages. Some systems have the functions in libc.
             if (host_platform not in ['cygwin', 'qnx6'] and
                 find_file('rpcsvc/yp_prot.h', inc_dirs, []) is not None):
-                if (self.compiler.find_library_file(lib_dirs, 'nsl')):
-                    libs = ['nsl']
-                else:
-                    libs = []
+                nis_libs = []
+                nis_includes = []
+                if self.compiler.find_library_file(lib_dirs, 'nsl'):
+                    nis_libs.append('nsl')
+                if self.compiler.find_library_file(lib_dirs, 'tirpc'):
+                    # Sun RPC has been moved from glibc to libtirpc
+                    # rpcsvc/yp_prot.h is still in /usr/include, but
+                    # rpc/rpc.h has been moved into tirpc/ subdir.
+                    nis_libs.append('tirpc')
+                    nis_includes.append('/usr/include/tirpc')
                 exts.append( Extension('nis', ['nismodule.c'],
-                                       libraries = libs) )
+                                       libraries = nis_libs,
+                                       include_dirs=nis_includes) )
             else:
                 missing.append('nis')
         else:
@@ -1361,7 +1398,7 @@ class PyBuildExt(build_ext):
             if host_platform == 'darwin':
                 # On OS X, there is no separate /usr/lib/libncursesw nor
                 # libpanelw.  If we are here, we found a locally-supplied
-                # version of libncursesw.  There should be also be a
+                # version of libncursesw.  There should also be a
                 # libpanelw.  _XOPEN_SOURCE defines are usually excluded
                 # for OS X but we need _XOPEN_SOURCE_EXTENDED here for
                 # ncurses wide char support
@@ -1496,6 +1533,7 @@ class PyBuildExt(build_ext):
         if '--with-system-expat' in sysconfig.get_config_var("CONFIG_ARGS"):
             expat_inc = []
             define_macros = []
+            extra_compile_args = []
             expat_lib = ['expat']
             expat_sources = []
             expat_depends = []
@@ -1507,6 +1545,7 @@ class PyBuildExt(build_ext):
                 # call XML_SetHashSalt(), expat entropy sources are not needed
                 ('XML_POOR_ENTROPY', '1'),
             ]
+            extra_compile_args = []
             expat_lib = []
             expat_sources = ['expat/xmlparse.c',
                              'expat/xmlrole.c',
@@ -1524,8 +1563,15 @@ class PyBuildExt(build_ext):
                              'expat/xmltok_impl.h'
                              ]
 
+            cc = sysconfig.get_config_var('CC').split()[0]
+            ret = os.system(
+                      '"%s" -Werror -Wimplicit-fallthrough -E -xc /dev/null >/dev/null 2>&1' % cc)
+            if ret >> 8 == 0:
+                extra_compile_args.append('-Wno-implicit-fallthrough')
+
         exts.append(Extension('pyexpat',
                               define_macros = define_macros,
+                              extra_compile_args = extra_compile_args,
                               include_dirs = expat_inc,
                               libraries = expat_lib,
                               sources = ['pyexpat.c'] + expat_sources,
